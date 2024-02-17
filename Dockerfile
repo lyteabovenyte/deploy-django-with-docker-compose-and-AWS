@@ -1,4 +1,4 @@
-FROM python3.9-alpine3.13
+FROM python:3.9-alpine3.13
 
 LABEL maintainer='amir alaeifar'
 
@@ -12,8 +12,16 @@ EXPOSE 8000
 
 RUN python -m venv /py && \
     /py/bin/pip install -U pip && \
+    apk add --update --no-cache postgresql-client && \
+    apk add --update --no-cache --virtual .tmp-deps \
+        build-base postgresql-dev musl-dev && \ 
     /py/bin/pip install -r /requirements.txt && \
-    adduser --disabled-password --no-create-home app
+    apk del .tmp-deps && \
+    adduser --disabled-password --no-create-home app && \
+    mkdir -p vol/web/static && \
+    mkdir -p vol/web/media && \
+    chown -R app:app /vol && \
+    chmod -R 755 /vol
 
 ENV PATH="/py/bin:$PATH"
 
